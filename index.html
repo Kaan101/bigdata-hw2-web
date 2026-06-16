@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AC-DC Sertifika Konsolu — Alignment-Conditioned Data Contract</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1B2A41; --ink-soft:#54627A; --paper:#F4F6F4; --panel:#FFFFFF;
+  --line:#D8DEE4; --certify:#0E7C66; --certify-soft:#E2F2EC;
+  --quarantine:#B23A2E; --quarantine-soft:#F7E6E3;
+  --mesh:#5B4FC4; --mesh-soft:#ECEAF9; --gate:#C77F1A; --gate-soft:#FBF0DC;
+  --infer:#356A9E; --infer-soft:#E5EEF6;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --disp:'Space Grotesk',var(--sans);
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55}
+a{color:var(--mesh)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 64px}
+
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.head-in{max-width:1180px;margin:0 auto;padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--ink-soft)}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(20px,3vw,28px);letter-spacing:-.01em}
+.cid{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;padding:34px 0 26px}
+.hero p{max-width:52ch;color:var(--ink-soft)}
+.hero .lead{font-size:17px;color:var(--ink)}
+
+/* —— imza öğesi: karar damgası —— */
+.stamp{justify-self:center;text-align:center;border:3px solid;border-radius:10px;
+  padding:14px 30px;transform:rotate(-4deg);font-family:var(--disp);user-select:none}
+.stamp .verdict{font-size:clamp(26px,4vw,40px);font-weight:700;letter-spacing:.12em}
+.stamp .sub{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.stamp.ok{color:var(--certify);border-color:var(--certify);background:var(--certify-soft)}
+.stamp.bad{color:var(--quarantine);border-color:var(--quarantine);background:var(--quarantine-soft)}
+@media (prefers-reduced-motion:no-preference){
+  .stamp.thump{animation:thump .45s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes thump{0%{transform:rotate(-4deg) scale(1.6);opacity:0}60%{opacity:1}100%{transform:rotate(-4deg) scale(1)}}
+}
+
+.tabs{display:flex;gap:8px;margin:8px 0 22px;flex-wrap:wrap}
+.tab{font-family:var(--disp);font-weight:500;font-size:14px;border:1px solid var(--line);
+  background:var(--panel);border-radius:999px;padding:8px 18px;cursor:pointer;color:var(--ink-soft)}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tab:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--mesh);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:430px 1fr;gap:24px;align-items:start}
+.leftcol{display:flex;flex-direction:column;gap:24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.card h2{font-family:var(--disp);font-size:16px;font-weight:700;margin-bottom:4px}
+.card .hint{font-size:13px;color:var(--ink-soft);margin-bottom:14px}
+
+/* —— sözleşme belgesi: sınırlar düzenlenebilir —— */
+.yaml{font-family:var(--mono);font-size:12.5px;line-height:1.85;white-space:pre-wrap;color:var(--ink)}
+.yaml .k{color:var(--mesh)} .yaml .c{color:#8A93A0}
+.yaml input{font:inherit;font-size:13.5px;width:9ch;min-height:30px;border:none;border-bottom:2px solid var(--gate);
+  background:var(--gate-soft);color:var(--ink);text-align:right;padding:2px 7px;border-radius:4px 4px 0 0}
+.reset{margin-top:12px;font:500 13px var(--sans);border:1px solid var(--line);background:var(--paper);
+  border-radius:8px;padding:7px 14px;cursor:pointer;color:var(--ink)}
+
+/* —— tolerans rayları —— */
+.metric{padding:13px 0;border-top:1px dashed var(--line)}
+.metric:first-of-type{border-top:none}
+.m-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.m-name{font-weight:500}
+.layer{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;border-radius:4px;padding:2px 7px}
+.layer.mesh{background:var(--mesh-soft);color:var(--mesh)}
+.layer.gate{background:var(--gate-soft);color:var(--gate)}
+.layer.infer{background:var(--infer-soft);color:var(--infer)}
+.m-num{font-family:var(--mono);font-size:13px}
+.chip{font:500 11px var(--disp);letter-spacing:.08em;border-radius:4px;padding:3px 8px}
+.chip.ok{background:var(--certify-soft);color:var(--certify)}
+.chip.bad{background:var(--quarantine-soft);color:var(--quarantine)}
+.rail{position:relative;height:14px;margin-top:9px;border-radius:7px;background:var(--quarantine-soft);overflow:hidden}
+.zone{position:absolute;top:0;bottom:0;background:var(--certify-soft);border-radius:7px}
+.bndline{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.marker{position:absolute;top:-5px;width:0;height:0;transform:translateX(-6px);
+  border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--ink)}
+.marker.bad{border-top-color:var(--quarantine)}
+.marker.ok{border-top-color:var(--certify)}
+.rail-lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:4px}
+.m-case{margin-top:7px;padding:6px 10px;font-size:12.5px;line-height:1.5;color:var(--ink-soft);
+  background:var(--paper);border-left:3px solid var(--line);border-radius:0 6px 6px 0}
+.m-case strong{color:var(--ink)}
+.m-case.sc-a{border-left-color:#E24B4A}
+.m-case.sc-b{border-left-color:#EF9F27}
+.m-case.sc-c{border-left-color:#1D9E75}
+@media (prefers-reduced-motion:no-preference){.marker{transition:left .4s ease}.zone{transition:width .4s ease,left .4s ease}}
+
+/* —— alt bölüm —— */
+.stat{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+.stat div{background:var(--paper);border-radius:8px;padding:10px 14px;flex:1;min-width:140px}
+.stat .v{font-family:var(--mono);font-size:18px;font-weight:500}
+.stat .l{font-size:12px;color:var(--ink-soft)}
+textarea{width:100%;font:14px var(--sans);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;resize:vertical;min-height:64px;background:var(--paper);color:var(--ink)}
+.send{margin-top:10px;font:500 14px var(--disp);background:var(--ink);color:#fff;border:none;
+  border-radius:8px;padding:9px 18px;cursor:pointer}
+.gr-out{margin-top:12px;font-family:var(--mono);font-size:13px;border-radius:8px;padding:10px 14px;display:none;line-height:1.7}
+.gr-out.ok{display:block;background:var(--certify-soft);color:var(--certify)}
+.gr-out.bad{display:block;background:var(--quarantine-soft);color:var(--quarantine)}
+@media (prefers-reduced-motion:no-preference){
+  .gr-out.flash{animation:grflash .35s ease}
+  @keyframes grflash{0%{transform:translateY(4px);opacity:.3}100%{transform:translateY(0);opacity:1}}
+}
+footer{margin-top:40px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:14px}
+
+@media(max-width:940px){.grid,.hero{grid-template-columns:1fr}.stamp{justify-self:start}.pubgrid{grid-template-columns:1fr}}
+
+/* —— yayın hattı & katalog —— */
+.pubcard{margin-top:24px}
+.pubcard h3{font-family:var(--disp);font-size:13.5px;margin:0 0 8px;color:var(--ink)}
+.stepper{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+.step{font:500 12px var(--disp);letter-spacing:.03em;border:1px solid var(--line);
+  border-radius:999px;padding:6px 13px;color:var(--ink-soft);background:var(--paper)}
+.step.ok{background:var(--certify-soft);border-color:var(--certify);color:var(--certify)}
+.step.fail{background:var(--quarantine-soft);border-color:var(--quarantine);color:var(--quarantine)}
+.step.skip{opacity:.45}
+.pubbtns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.pubgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.mono{font-family:var(--mono);font-size:11.5px;line-height:1.7}
+.lintout,.attout,.regout{background:var(--paper);border:1px solid var(--line);
+  border-radius:8px;padding:10px 12px;min-height:120px;white-space:pre-wrap;word-break:break-word}
+.attout.tampered{border-color:var(--quarantine);background:var(--quarantine-soft)}
+.gaterow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.gaterow select{font:13px var(--mono);padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--paper);color:var(--ink)}
+.masked{text-decoration:line-through;opacity:.55}
+
+/* —— guardrail nabız şeridi —— */
+.tickbar{margin-top:10px;display:flex;gap:3px;flex-wrap:wrap;min-height:14px}
+.tickbar i{display:inline-block;width:7px;height:14px;border-radius:2px}
+.tickbar i.tk-ok{background:var(--certify-soft);border:1px solid var(--certify)}
+.tickbar i.tk-bad{background:var(--quarantine);border:1px solid var(--quarantine)}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-in">
+    <div>
+      <div class="eyebrow">FEDERATİF HESAPLAMALI YÖNETİŞİM · DATA MESH</div>
+      <h1>AC-DC Sertifika Konsolu</h1>
+    </div>
+    <div class="cid">acdc://kredi-domain/musteri-etkilesimleri/v3.2.0</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <p class="lead">Sözleşme bir belge değil, çalışan bir denetçidir. Soldaki sınır
+      değerlerini değiştirin, bir senaryo seçin — output portunun kararı anında
+      yeniden hesaplanır.</p>
+      <p>Metrikler, 20.000 satırlık sentetik pilot çalışmanın gerçek doğrulayıcı
+      çıktılarından (attestation) gömülüdür.</p>
+    </div>
+    <div class="stamp ok" id="stamp" role="status" aria-live="polite">
+      <div class="verdict" id="verdict">CERTIFIED</div>
+      <div class="sub" id="stampsub">mesh politika katmanı · imzalı attestation</div>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="Senaryo seçimi">
+    <button class="tab" role="tab" aria-selected="false" data-s="a">Senaryo A · ham veri</button>
+    <button class="tab" role="tab" aria-selected="false" data-s="b">Senaryo B · eşik kalibrasyonu</button>
+    <button class="tab" role="tab" aria-selected="true"  data-s="c">Senaryo C · + veri minimizasyonu</button>
+  </div>
+
+  <div class="grid">
+    <div class="leftcol">
+      <section class="card" aria-label="Düzenlenebilir sözleşme">
+        <h2>contract.yaml</h2>
+        <p class="hint">Altı çizili değerler sözleşme sınırlarıdır — düzenlenebilir.</p>
+        <div class="yaml"><span class="k">alignment_vectors:</span>
+  <span class="k">algorithmic_bias:</span>            <span class="c"># katman: mesh</span>
+    demographic_parity_difference: &lt;= <input id="b_dpd" type="text" inputmode="decimal" value="0.05" aria-label="parite sınırı">
+    equalized_odds_gap:            &lt;= <input id="b_eo" type="text" inputmode="decimal" value="0.08" aria-label="odds sınırı">
+    proxy_leakage_auc:             &lt;= <input id="b_px" type="text" inputmode="decimal" value="0.60" aria-label="vekil sınırı">
+  <span class="k">provenance_and_consent:</span>      <span class="c"># katman: giriş kapısı</span>
+    lineage_coverage:              &gt;= <input id="b_ln" type="text" inputmode="decimal" value="0.98" aria-label="provenance sınırı">
+    rlhf_consent_coverage:         == <input id="b_cn" type="text" inputmode="decimal" value="1.00" aria-label="rıza sınırı">
+  <span class="k">behavioral_safety:</span>           <span class="c"># katman: inference</span>
+    block_threshold (istek başı):  &gt;  <input id="b_th" type="text" inputmode="decimal" value="0.50" aria-label="bloklama eşiği">
+    p_toxicity_exceedance:         &lt;= <input id="b_tx" type="text" inputmode="decimal" value="0.001" aria-label="toksisite sınırı"></div>
+        <button class="reset" id="reset">Sınırları varsayılana döndür</button>
+      </section>
+
+      <section class="card" aria-label="Guardrail deneme alanı">
+        <h2>Inference guardrail · canlı deneme</h2>
+        <p class="hint">Bir müşteri yanıtı yazın; tox-stub v0.1 skorlar, sözleşmedeki <code>block_threshold</code> üstü engellenir.</p>
+        <textarea id="grtext" placeholder="Örn: Başvurunuz değerlendirildi, teşekkür ederiz."></textarea>
+        <button class="send" id="grsend">Yanıtı denetimden geçir</button>
+        <div class="gr-out" id="grout"></div>
+        <div class="tickbar" id="tickbar" aria-label="Kayan pencere: son istekler (yeşil temiz, kırmızı toksik)"></div>
+      </section>
+
+      <section class="card" aria-label="Ek yük karşılaştırması">
+        <h2>Hesaplama ek yükü (pilot ölçümleri)</h2>
+        <p class="hint">Mesh maliyeti sürüm başına amorti edilir; guardrail maliyeti trafikle çarpılır.</p>
+        <div class="stat">
+          <div><div class="v" id="ovmesh">—</div><div class="l">mesh doğrulama / satır (amorti)</div></div>
+          <div><div class="v">1.5 µs</div><div class="l">guardrail stub / istek</div></div>
+          <div><div class="v">50–300 ms</div><div class="l">gerçek LLM-ray / istek (literatür)</div></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" aria-label="Ölçülen metrikler">
+      <h2>Ölçülen değişmezler <span id="scname" style="font-weight:400;color:var(--ink-soft)"></span></h2>
+      <p class="hint">Yeşil bölge: sözleşmenin izin verdiği aralık. Ok: ölçülen değer.</p>
+      <div id="metrics"></div>
+    </section>
+  </div>
+
+  <section class="card pubcard" aria-label="Yayın hattı ve katalog">
+    <h2>Yayın hattı &amp; katalog · uçtan uca güven zinciri</h2>
+    <p class="hint">Seçili senaryoyu, soldaki mevcut sınırlarla mesh'e yayımlamayı dener:
+    konsey linti → doğrulama → imzalı attestation → katalog kaydı → erişim. Damga yerel görünümdür;
+    yayın, konseyin küresel kurallarından da geçmek zorundadır.</p>
+
+    <div class="stepper" id="stepper">
+      <span class="step" data-i="0">1 · PR</span>
+      <span class="step" data-i="1">2 · Konsey linti</span>
+      <span class="step" data-i="2">3 · Doğrulama</span>
+      <span class="step" data-i="3">4 · Attestation</span>
+      <span class="step" data-i="4">5 · Katalog</span>
+      <span class="step" data-i="5">6 · Erişim</span>
+    </div>
+    <div class="pubbtns">
+      <button class="send" id="pubbtn">Portu yayımla</button>
+      <button class="reset" id="tamperbtn" disabled>Attestation'ı kurcala (kararı elle CERTIFIED yap)</button>
+    </div>
+
+    <div class="pubgrid">
+      <div class="pubcol">
+        <h3>Konsey linti (meta-şema)</h3>
+        <div class="lintout mono" id="lintout">— henüz yayın denenmedi —</div>
+      </div>
+      <div class="pubcol">
+        <h3>İmzalı attestation</h3>
+        <div class="attout mono" id="attout">—</div>
+      </div>
+      <div class="pubcol">
+        <h3>Katalog defteri (salt-ekleme, zincirli)</h3>
+        <div class="regout mono" id="regout">— boş —</div>
+      </div>
+    </div>
+
+    <div class="gaterow">
+      <label for="purpose"><strong>Erişim kapısı:</strong> iş yükü <code>rlhf-pipeline-v2</code>, amaç beyanı</label>
+      <select id="purpose">
+        <option value="rlhf_preference_training">rlhf_preference_training</option>
+        <option value="analytics">analytics</option>
+        <option value="fairness_audit">fairness_audit</option>
+        <option value="redistribution">redistribution</option>
+      </select>
+      <button class="send" id="gatebtn">Erişim iste</button>
+    </div>
+    <div class="gr-out" id="gateout"></div>
+  </section>
+
+  <footer>Pilot: 20.000 satır sentetik kredi-etkileşim verisi · doğrulayıcı: mesh_validator.py ·
+  metrik dayanakları: Hardt vd. (NeurIPS 2016), Schelter vd. (VLDB 2018), Mitchell vd. (FAccT 2019).
+  Skorlayıcı bir stub'tır; amaç denetim mimarisini göstermektir.</footer>
+</div>
+
+<script>
+const DATA = {
+  a:{ad:"Senaryo A — ham, önyargılı model",
+     dpd:0.2053, eo:0.3489, px:0.7831, ln:0.949, cn:0.9603, tx:0.00715, us:10.06},
+  b:{ad:"Senaryo B — grup-bazlı eşik kalibrasyonu",
+     dpd:0.0203, eo:0.0076, px:0.7924, ln:1.000, cn:1.0000, tx:0.00030, us:6.44},
+  c:{ad:"Senaryo C — kalibrasyon + veri minimizasyonu",
+     dpd:0.0108, eo:0.0111, px:0.4979, ln:1.000, cn:1.0000, tx:0.00030, us:4.23}
+};
+const DEFS=[
+ {id:"dpd",name:"Demografik parite farkı",dir:"le",max:0.4, layer:"mesh", ltxt:"mesh",
+  cases:{
+   a:"Gizli skor bonusu erkeklere ~21 puan daha yüksek onay oranı üretti — sınırın dört katı ihlal (TC-A1).",
+   b:"Grup-bazlı eşik kalibrasyonu farkı 0.020'ye indirdi; sınırı 0.02'ye sıkılaştırın, kıl payı FAIL'i görün (TC-B3).",
+   c:"Kalibrasyon korunuyor, fark 0.011 — konsey sınırı 0.01'e çekerse en iyi senaryo bile karantinaya düşer (TC-C3)."}},
+ {id:"eo", name:"Equalized odds farkı",   dir:"le",max:0.4, layer:"mesh", ltxt:"mesh",
+  cases:{
+   a:"TPR/FPR farkı 0.35: model yalnız onay oranında değil, hatalarını da tek grupta yoğunlaştırıyor (Hardt vd. 2016).",
+   b:"Kalibrasyon hata oranlarını da dengeledi (0.008) — parite ile birlikte düzeldi.",
+   c:"Veri minimizasyonu odds dengesini bozmadı; 0.011 sınırın rahatça içinde."}},
+ {id:"px", name:"Vekil sızıntı AUC",      dir:"le",max:1.0, min:0.5, layer:"mesh", ltxt:"mesh",
+  cases:{
+   a:"Posta bölgesi cinsiyeti 0.78 AUC ile ele veriyor: korunan niteliği tablodan silmek yetmiyor.",
+   b:"Tahminler düzeldi ama öznitelik hâlâ sızdırıyor (0.79) — kalibrasyon vekili gidermez; portu karantinada tutan tek FAIL bu (TC-B1).",
+   c:"Bölge genelleştirilince AUC 0.498'e (rastgele tahmin düzeyi) indi; sınırı 0.49 yapıp kıl payı karantinayı deneyin (TC-C2)."}},
+ {id:"ln", name:"Provenance kapsamı",     dir:"ge",max:1.0, min:0.9, layer:"gate", ltxt:"giriş kapısı",
+  cases:{
+   a:"Satırların %5,1'i kaynağına izlenemiyor — RLHF için kökeni belirsiz veri demek; sınır ≥ 0.98 sağlanamadı.",
+   b:"Giriş kapısı filtresi izlenemeyen satırları hatta hiç sokmadı; kapsam tam (1.00).",
+   c:"Kapsam tam; attestation bu satırları veri özetiyle (sha256) sözleşmeye bağlıyor."}},
+ {id:"cn", name:"RLHF rıza kapsamı",      dir:"eq",max:1.0, min:0.9, layer:"gate", ltxt:"giriş kapısı",
+  cases:{
+   a:"%96 rıza 'neredeyse uyumlu' değildir: kalan %4 KVKK ihlalidir. Eşitlik kısıtı (== 1.00) bu yüzden toleranssız (TC-A2/A3).",
+   b:"Rızasız satırlar yayın öncesi satır düzeyinde filtrelendi; kapsam tam 1.00.",
+   c:"Kapsam tam; rıza geri çekilirse 72 saatlik SLA ile aşağı akışa purge + unlearning bileti yayılır."}},
+ {id:"tx", name:"P(toksisite > 0.5)",     dir:"le",max:0.01,layer:"infer",ltxt:"inference",
+  cases:{
+   a:"Ham yanıtların %0,72'si toksik — sınırın 7 katı. Mesh bunu yalnızca raporlar; bloklamayı inference guardrail yapar (TC-G4).",
+   b:"Guardrail sonrası dışarı çıkan oran 0.0003'e indi; sınırın altında.",
+   c:"Oran 0.0003; istek-başına ray + kayan pencere kestirimcisi birlikte denetliyor — alttaki deneme alanında test edin."}}
+];
+const DEFAULTS={dpd:0.05,eo:0.08,px:0.60,ln:0.98,cn:1.00,tx:0.001,th:0.50};
+let scen="c", firstPaint=true;
+
+const $=id=>document.getElementById(id);
+const fmt=(v,d=4)=>Number(v).toFixed(d).replace(/0+$/,"").replace(/\.$/,".0");
+
+function bounds(){const o={};for(const k in DEFAULTS){const v=parseFloat(String($("b_"+k).value).replace(",","."));o[k]=isNaN(v)?DEFAULTS[k]:v;}return o;}
+function passes(d,val,b){return d.dir==="le"?val<=b+1e-9:d.dir==="ge"?val>=b-1e-9:Math.abs(val-b)<1e-9;}
+
+function render(){
+  const dat=DATA[scen], b=bounds();
+  $("scname").textContent="— "+dat.ad;
+  $("ovmesh").textContent=dat.us+" µs";
+  let allOk=true, html="";
+  for(const d of DEFS){
+    const val=dat[d.id], bd=b[d.id], ok=passes(d,val,bd); allOk&&=ok;
+    const lo=d.min??0, span=d.max-lo;
+    const P=x=>Math.min(100,Math.max(0,(x-lo)/span*100));
+    const zl=d.dir==="le"?0:(d.dir==="ge"?P(bd):Math.max(0,P(bd)-2)), zw=d.dir==="le"?P(bd):(d.dir==="ge"?100-P(bd):4);
+    const op=d.dir==="le"?"≤":d.dir==="ge"?"≥":"=";
+    html+=`<div class="metric">
+      <div class="m-head">
+        <span class="m-name">${d.name} <span class="layer ${d.layer}">${d.ltxt}</span></span>
+        <span class="m-num">${fmt(val)} <span style="color:var(--ink-soft)">(sınır ${op} ${fmt(bd)})</span>
+          <span class="chip ${ok?"ok":"bad"}">${ok?"PASS":"FAIL"}</span></span>
+      </div>
+      <div class="rail" aria-hidden="true">
+        <div class="zone" style="left:${zl}%;width:${zw}%"></div>
+        <div class="bndline" style="left:${P(bd)}%"></div>
+        <div class="marker ${ok?"ok":"bad"}" style="left:${P(val)}%"></div>
+      </div>
+      <div class="rail-lab"><span>${fmt(lo,2)}</span><span>${fmt(d.max,2)}</span></div>
+      <div class="m-case sc-${scen}">${d.cases[scen]}</div>
+    </div>`;
+  }
+  $("metrics").innerHTML=html;
+  const st=$("stamp");
+  st.className="stamp "+(allOk?"ok":"bad");
+  $("verdict").textContent=allOk?"CERTIFIED":"QUARANTINED";
+  $("stampsub").textContent=allOk?"output portu tüketime açık · attestation imzalandı"
+                                 :"output portu karantinada · tüketim engellendi";
+  if(!firstPaint){st.classList.remove("thump");void st.offsetWidth;st.classList.add("thump");}
+  firstPaint=false;
+}
+
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+  scen=t.dataset.s;
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
+  render();
+}));
+for(const k in DEFAULTS)$("b_"+k).addEventListener("input",render);
+$("reset").addEventListener("click",()=>{for(const k in DEFAULTS)$("b_"+k).value=DEFAULTS[k];render();});
+
+const LEX={"aptal":0.6,"rezil":0.55,"salak":0.6,"salakca":0.6,"salakça":0.6};
+const toxScore=t=>{
+  const words=t.toLocaleLowerCase("tr").split(/[^\p{L}]+/u).filter(Boolean);
+  let s=0; for(const w of words) if(LEX[w]) s+=LEX[w];
+  return Math.min(1,s);
+};
+const GR={n:0,blocked:0,win:[]};            // oturum sayacı + kayan pencere (son 50)
+function runGuardrail(){
+  const t=($("grtext").value||"").trim();
+  const out=$("grout");
+  if(!t){
+    out.className="gr-out bad"; out.textContent="Boş istek — denetlenecek yanıt yazın.";
+    return;
+  }
+  const s=toxScore(t);
+  const thraw=parseFloat(String($("b_th").value).replace(",","."));const th=Math.min(1,Math.max(0,isNaN(thraw)?0.5:thraw));
+  const blocked=s>th;            // yaptırım: düzenlenebilir block_threshold
+  const exceed=s>0.5;            // ölçüm: değişmezin sabit eşiği P(tox > 0.5)
+  GR.n++; if(blocked)GR.blocked++;
+  GR.win.push(exceed?1:0); if(GR.win.length>50)GR.win.shift();
+  $("tickbar").innerHTML=GR.win.slice(-30).map(v=>`<i class="${v?"tk-bad":"tk-ok"}"></i>`).join("");
+  const p=GR.win.reduce((a,b)=>a+b,0)/GR.win.length;
+  const bndraw=parseFloat(String($("b_tx").value).replace(",","."));const bnd=isNaN(bndraw)?0.001:bndraw;
+  out.className="gr-out "+(blocked?"bad":"ok");
+  out.innerHTML=(blocked
+    ? `<strong>#${GR.n} BLOCKED</strong> · tox_score = ${s.toFixed(2)} &gt; eşik ${th.toFixed(2)} — yanıt iletilmedi`
+    : `<strong>#${GR.n} ALLOWED</strong> · tox_score = ${s.toFixed(2)} ≤ eşik ${th.toFixed(2)} — yanıt iletildi`)
+    + `<br><span style="opacity:.85">oturum: ${GR.n} istek, ${GR.blocked} blok · `
+    + `kayan pencere P̂(tox&gt;0.5) = ${p.toFixed(3)} ${p<=bnd?"≤":"&gt;"} sınır ${bnd} `
+    + `→ ${p<=bnd?"sözleşme uyumlu":"toplu kestirimci sınır aşımında"}</span>`;
+  out.classList.remove("flash"); void out.offsetWidth; out.classList.add("flash");
+}
+$("grsend").addEventListener("click",runGuardrail);
+
+/* ============ YAYIN HATTI & KATALOG ============ */
+const REG=[]; let lastAtt=null;
+const djb2=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+  return h.toString(16).padStart(8,"0")+djb2b(s);};
+const djb2b=s=>{let h=216613;for(let i=s.length-1;i>=0;i--)h=((h<<5)+h+s.charCodeAt(i))>>>0;
+  return h.toString(16).padStart(8,"0");};
+const attBody=a=>JSON.stringify([a.contract_sha,a.data_sha,a.verdict,a.ts,a.n]);
+
+function lintRules(b){return [
+  ["META-001","algorithmic_bias bloğu zorunlu", true],
+  ["META-003","parite eşiği konsey aralığında (0, 0.10]", b.dpd>0 && b.dpd<=0.10+1e-9],
+  ["META-006","vekil AUC eşiği konsey tavanında ≤ 0.65", b.px<=0.65+1e-9],
+  ["POL-101","rlhf amacı → rıza kapsamı == 1.00", Math.abs(b.cn-1.00)<1e-9],
+  ["POL-102","sınıflandırıcı sürümü sabit (tox-stub 0.1)", true],
+  ["POL-105","block_threshold konsey tavanında ≤ 0.70", b.th<=0.70+1e-9],
+];}
+
+function setSteps(states){document.querySelectorAll(".step").forEach((el,i)=>{
+  el.className="step"+(states[i]?" "+states[i]:"");});}
+
+function publish(){
+  const b=bounds(), dat=DATA[scen];
+  const states=["ok","","","","",""];
+  const lint=lintRules(b);
+  $("lintout").textContent=lint.map(([c,d,ok])=>`[${ok?"PASS":"FAIL"}] ${c}  ${d}`).join("\n");
+  const lintOk=lint.every(r=>r[2]);
+  states[1]=lintOk?"ok":"fail";
+  if(!lintOk){
+    states[2]=states[3]=states[4]=states[5]="skip"; setSteps(states);
+    $("attout").className="attout mono"; $("attout").textContent=
+      "PR, konsey meta-şemasından döndü — doğrulamaya hiç gelinmedi.\n"+
+      "Yerel damga ne derse desin, yayın küresel politikaya tabidir.";
+    lastAtt=null; $("tamperbtn").disabled=true; return;
+  }
+  let allOk=true;
+  for(const d of DEFS) allOk &&= passes(d, dat[d.id], b[d.id]);
+  const verdict=allOk?"CERTIFIED":"QUARANTINED";
+  states[2]="ok";
+  lastAtt={contract_sha:djb2(JSON.stringify(b)), data_sha:djb2("snapshot:"+scen),
+           verdict, ts:new Date().toISOString().slice(0,19)+"Z", n:20000, tampered:false};
+  lastAtt.sig=djb2(attBody(lastAtt));
+  renderAtt(); states[3]="ok"; $("tamperbtn").disabled=false;
+  const prev=REG.length?REG[REG.length-1]:null;
+  REG.push({seq:REG.length+1, scen, status:verdict,
+            c:lastAtt.contract_sha.slice(0,8), d:lastAtt.data_sha.slice(0,8),
+            prev:prev?djb2(JSON.stringify(prev)).slice(0,8):"GENESIS"});
+  $("regout").textContent=REG.map(r=>
+    `#${r.seq} ${r.status.padEnd(11)} senaryo:${r.scen}  sözleşme:${r.c}…  veri:${r.d}…  önceki:${r.prev}…`
+  ).join("\n");
+  states[4]="ok";
+  states[5]=verdict==="CERTIFIED"?"ok":"fail";
+  setSteps(states);
+}
+
+function renderAtt(){
+  const a=lastAtt, el=$("attout");
+  el.className="attout mono"+(a.tampered?" tampered":"");
+  el.textContent=
+    `contract_sha : ${a.contract_sha.slice(0,12)}…\n`+
+    `dataset_sha  : ${a.data_sha.slice(0,12)}…\n`+
+    `verdict      : ${a.verdict}${a.tampered?"   ← elle değiştirildi":""}\n`+
+    `timestamp    : ${a.ts}\nn_rows       : ${a.n}\n`+
+    `signature    : ${a.sig.slice(0,16)}…  (temsilî özet)`;
+}
+
+$("pubbtn").addEventListener("click",publish);
+$("tamperbtn").addEventListener("click",()=>{
+  if(!lastAtt)return; lastAtt.verdict="CERTIFIED"; lastAtt.tampered=true; renderAtt();
+});
+
+const PURPOSE_ALLOWED=["analytics","rlhf_preference_training","fairness_audit"];
+const COLS=["musteri_id","cinsiyet","yas_grubu","gelir","kredi_gecmisi_yil","posta_bolgesi","yanit_metni"];
+const PROTECTED=["cinsiyet","yas_grubu"];
+$("gatebtn").addEventListener("click",()=>{
+  const out=$("gateout"), purpose=$("purpose").value;
+  const deny=r=>{out.className="gr-out bad";out.innerHTML=`<strong>DENY</strong> · ${r}`;
+    out.classList.remove("flash");void out.offsetWidth;out.classList.add("flash");};
+  const last=REG[REG.length-1];
+  if(!last) return deny("katalogda kayıt yok — önce portu yayımlayın");
+  if(djb2(attBody(lastAtt))!==lastAtt.sig)
+    return deny("attestation imzası uyuşmuyor — kurcalama tespit edildi (imzalı kanıt atomiktir)");
+  if(last.status!=="CERTIFIED")
+    return deny(`port durumu ${last.status} — karantinalı porta hiçbir amaç erişemez`);
+  if(!PURPOSE_ALLOWED.includes(purpose))
+    return deny(`amaç '${purpose}' sözleşmenin allowed_purposes kümesinde değil`);
+  const mask = purpose==="fairness_audit" ? [] : PROTECTED;
+  const cols=COLS.map(c=>mask.includes(c)?`<span class="masked">${c}</span>`:c).join(", ");
+  out.className="gr-out ok";
+  out.innerHTML=`<strong>GRANT</strong> · amaç-damgalı token kesildi (TTL 15 dk) · `+
+    `sütun kapsamı: ${cols}`+
+    (mask.length?`<br><span style="opacity:.85">korunan nitelikler maskelendi: `+
+    `conditioning_on_protected_attributes yasağı</span>`:"");
+  out.classList.remove("flash");void out.offsetWidth;out.classList.add("flash");
+});
+$("grtext").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();runGuardrail();}
+});
+
+render();
+</script>
+</body>
+</html>
