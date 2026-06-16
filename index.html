@@ -139,6 +139,18 @@ footer{margin-top:40px;font-size:12.5px;color:var(--ink-soft);border-top:1px sol
 .tickbar i{display:inline-block;width:7px;height:14px;border-radius:2px}
 .tickbar i.tk-ok{background:var(--certify-soft);border:1px solid var(--certify)}
 .tickbar i.tk-bad{background:var(--quarantine);border:1px solid var(--quarantine)}
+
+ 
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  a:hover {
+    font-weight: bold;
+  }
+ 
+
 </style>
 </head>
 <body>
@@ -148,6 +160,8 @@ footer{margin-top:40px;font-size:12.5px;color:var(--ink-soft);border-top:1px sol
       <div class="eyebrow">FEDERATİF HESAPLAMALI YÖNETİŞİM · DATA MESH</div>
       <h1>AC-DC Sertifika Konsolu</h1>
     </div>
+      <div><a class="eyebrow"   href="AC-DC_Ekran Açıklama.pdf" target="_blank">Anlatım Dokümanı&nbsp;&nbsp;&nbsp;</a>
+  <a class="eyebrow"   href="Test-caseler.md.pdf" target="_blank">Test Dokümanı</a></div> 
     <div class="cid">acdc://kredi-domain/musteri-etkilesimleri/v3.2.0</div>
   </div>
 </header>
@@ -266,8 +280,7 @@ footer{margin-top:40px;font-size:12.5px;color:var(--ink-soft);border-top:1px sol
     <div class="gr-out" id="gateout"></div>
   </section>
   <br>
-  <div><a style="color:black; font-size: 14px;"  href="AC-DC_Ekran Açıklama.pdf" target="_blank">Anlatım Dokümanı&nbsp;&nbsp;&nbsp;</a>
-  <a style="color:black; font-size: 14px;"  href="Test-caseler.md.pdf" target="_blank">Test Dokümanı</a></div> 
+
   <footer>Pilot: 20.000 satır sentetik kredi-etkileşim verisi · doğrulayıcı: mesh_validator.py ·
   metrik dayanakları: Hardt vd. (NeurIPS 2016), Schelter vd. (VLDB 2018), Mitchell vd. (FAccT 2019).
   Skorlayıcı bir stub'tır; amaç denetim mimarisini göstermektir.</footer>
